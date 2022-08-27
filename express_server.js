@@ -6,6 +6,8 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
 
+// FUNCTIONS AND VARIABLES
+
 const generateRandomString = function() {
   let randomString = "";
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrsthvwxyz1234567890"
@@ -21,6 +23,9 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+
+// GET REQUESTS
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -34,12 +39,6 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 })
 
-app.post("/urls", (req, res) => {
-  const newShortURL = generateRandomString();
-  urlDatabase[newShortURL] = req.body.longURL;
-  res.redirect('/urls/' + newShortURL);
-});
-
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
@@ -49,15 +48,37 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  res.redirect(longURL);
+});
+
+
+// POST REQUESTS
+
+// Create new shortURL - redirect to page with that new url
+app.post("/urls", (req, res) => {
+  const newShortURL = generateRandomString();
+  urlDatabase[newShortURL] = req.body.longURL;
+  res.redirect("/urls/" + newShortURL);
+});
+
+app.post("/urls/:id", (req, res) => {
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+  res.render("urls_show", templateVars);
+  res.redirect("/urls/:id");
+});
+
+app.post("/urls/:id/edit", (req, res) => {
+  urlDatabase[req.params.id] = req.body.newURL;
+  res.redirect("/urls");
+});
+
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
 });
 
-app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
-});
 // What would happen if a client requests a short URL with a non-existant id?
 // What happens to the urlDatabase when the server is restarted?
 // What type of status code do our redirects have? What does this status code mean?
