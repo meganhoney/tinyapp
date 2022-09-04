@@ -85,7 +85,8 @@ app.post("/urls", (req, res) => {
 app.post("/register", (req, res) => {
   const templateVars = { id: generateRandomString(), email: req.body.email, password: req.body.password };
   users[`user${templateVars.id}`] = templateVars;
-  console.log(users);
+  // console.log(users);
+  res.cookie("user_id", templateVars.id);
   res.redirect("/urls");
 });
 
