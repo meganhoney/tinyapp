@@ -71,13 +71,31 @@ app.get("/urls", (req, res) => {
 })
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("register", templateVars);
+  const userID = req.cookies["user_id"];
+  // if user is registered and logged in registration page will render
+  if (!userID) {
+    const templateVars = {
+      user: null
+    };
+    res.render("register", templateVars);
+  } else {
+    res.redirect("/urls");
+  }
+  
 })
 
 app.get("/login", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("login", templateVars);
+  const userID = req.cookies["user_id"];
+  // if user is logged in login page will render
+  if (!userID) {
+    const templateVars = {
+      user: null
+    };
+    res.render("login", templateVars);
+  } else {
+    res.redirect("/urls");
+  }
+  
 })
 
 app.get("/urls/new", (req, res) => {
