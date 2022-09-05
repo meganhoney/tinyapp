@@ -111,12 +111,18 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users[req.cookies["user_id"]] };
+  console.log(templateVars);
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  if(!longURL) {
+    res.status(404).send("We do not have a link that corresponds to that short URL at this time");
+  } else {
+    res.redirect(longURL);
+  }
+  
 });
 
 
@@ -180,7 +186,7 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users[req.cookies["user_id"]] };
   res.render("urls_show", templateVars);
   res.redirect("/urls/:id");
 });
