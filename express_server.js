@@ -72,7 +72,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/register", (req, res) => {
   const userID = req.cookies["user_id"];
-  // if user is registered and logged in registration page will render
+  // if user is not registered and logged in registration page will render
   if (!userID) {
     const templateVars = {
       user: null
@@ -86,7 +86,7 @@ app.get("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
   const userID = req.cookies["user_id"];
-  // if user is logged in login page will render
+  // if user is not logged in login page will render
   if (!userID) {
     const templateVars = {
       user: null
@@ -99,8 +99,14 @@ app.get("/login", (req, res) => {
 })
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("urls_new", templateVars);
+  const userID = req.cookies["user_id"];
+  if(!userID) {
+    res.redirect("/login");
+  } else {
+    const templateVars = { user: users[req.cookies["user_id"]] };
+    res.render("urls_new", templateVars);
+  }
+
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -118,9 +124,16 @@ app.get("/u/:id", (req, res) => {
 
 // Create new shortURL - redirect to page with that new url
 app.post("/urls", (req, res) => {
-  const newShortURL = generateRandomString();
-  urlDatabase[newShortURL] = req.body.longURL;
-  res.redirect("/urls/" + newShortURL);
+  // only registered users can add urls
+  const userID = req.cookies["user_id"];
+  if(!userID) {
+    res.status(401).send("You must be logged in to create tiny URLs\n");
+  } else {
+    const newShortURL = generateRandomString();
+    urlDatabase[newShortURL] = req.body.longURL;
+    res.redirect("/urls/" + newShortURL);
+  }
+  
 });
 
 app.post("/login", (req, res) => {
