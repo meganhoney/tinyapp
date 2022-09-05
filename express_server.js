@@ -19,6 +19,21 @@ const generateRandomString = function() {
   return randomString;
 };
 
+const getUserByEmail = function(database, email) {
+  let user = {};
+
+  for (let key in database) {
+    if (database[key]['email'] === email) {
+      user = database[key];
+
+      return user;
+    }
+  }
+
+  return null;
+  
+};
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -84,11 +99,23 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const templateVars = { id: generateRandomString(), email: req.body.email, password: req.body.password };
-  users[`user${templateVars.id}`] = templateVars;
-  // console.log(users);
-  res.cookie("user_id", templateVars.id);
-  res.redirect("/urls");
+  const email = req.body.email;
+  const password = req.body.password;
+  
+  if (email === '' || password === '') {
+    res.status(400).send("Please input a valid email and password");
+  }
+
+  // if getUserByEmail returns null, register user
+  if (!getUserByEmail(users, email)) {
+    const userID = generateRandomString();
+    users[`user${userID}`] = { userID, email, password };
+    res.cookie("user_id", userID);
+    res.redirect("/urls");
+  }
+  
+  res.status(400).send("There is already a user with that email");
+  
 });
 
 // app.post("/login", (req, res) => {
