@@ -70,11 +70,13 @@ app.get("/urls", (req, res) => {
 })
 
 app.get("/register", (req, res) => {
-  res.render("register");
+  const templateVars = { user: users[`user${req.cookies["user_id"]}`] };
+  res.render("register", templateVars);
 })
 
 app.get("/login", (req, res) => {
-  res.render("login");
+  const templateVars = { user: users[`user${req.cookies["user_id"]}`] };
+  res.render("login", templateVars);
 })
 
 app.get("/urls/new", (req, res) => {
@@ -122,12 +124,12 @@ app.post("/register", (req, res) => {
   
 });
 
-// app.post("/login", (req, res) => {
-//   const username = req.body.username;
-//   res.cookie("username", username);
-//   res.redirect("/urls");
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  res.cookie("username", username);
+  res.redirect("/urls");
 
-// });
+});
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
