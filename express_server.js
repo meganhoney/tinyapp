@@ -1,11 +1,15 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieSession( {
+  name: "session",
+  keys: ["shiitake"],
+  maxAge: 24 * 60 * 60 * 1000
+}));
 
 // FUNCTIONS AND OBJECTS
 
@@ -201,7 +205,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect("/urls");
 })
 
