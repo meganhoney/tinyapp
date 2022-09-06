@@ -71,9 +71,15 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  const userID = req.cookies["user_id"];
   const templateVars = { user: users[req.cookies["user_id"]], urls: urlDatabase };
-  console.log(templateVars);
-  res.render("urls_index", templateVars);
+  if (!userID) {
+    res.status(401).send("You must be logged in to see this");
+  } else {
+    res.render("urls_index", templateVars);
+  }
+  //console.log(templateVars);
+  
 })
 
 app.get("/register", (req, res) => {
