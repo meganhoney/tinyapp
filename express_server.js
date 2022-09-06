@@ -1,8 +1,10 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
+
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
+
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession( {
@@ -11,54 +13,13 @@ app.use(cookieSession( {
   maxAge: 24 * 60 * 60 * 1000
 }));
 
-const { getUserByEmail } = require("./helpers");
 
 // FUNCTIONS AND OBJECTS
+const { generateRandomString, getUserByEmail, urlsForUser } = require("./helpers");
 
-const generateRandomString = function() {
-  let randomString = "";
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrsthvwxyz1234567890"
+const urlDatabase = {};
 
-  for (let i = 0; i < 6; i++) {
-    randomString += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return randomString;
-};
-
-const urlsForUser = function(id, database) {
-  let urls = {};
-
-  for (let key in database) {
-    if(database[key].userID === id) {
-      urls[key] = database[key].longURL;
-    }
-  }
-  return urls;
-};
-
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "b2xVn2",
-  },
-};
-
-const users = {
-  aJ48lW: {
-    id: "aJ48lW",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
-  },
-  b2xVn2: {
-    id: "b2xVn2",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
-};
+const users = {};
 
 
 // GET REQUESTS
