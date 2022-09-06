@@ -11,6 +11,8 @@ app.use(cookieSession( {
   maxAge: 24 * 60 * 60 * 1000
 }));
 
+const { getUserByEmail } = require("./helpers");
+
 // FUNCTIONS AND OBJECTS
 
 const generateRandomString = function() {
@@ -21,22 +23,6 @@ const generateRandomString = function() {
     randomString += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return randomString;
-};
-
-const getUserByEmail = function(database, email) {
-  
-  let user = {};
-
-  for (let key in database) {
-    if (database[key]['email'] === email) {
-      user = database[key];
-
-      return user;
-    }
-  }
-
-  return null;
-  
 };
 
 const urlsForUser = function(id, database) {
