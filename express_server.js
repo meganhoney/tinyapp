@@ -84,7 +84,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   const userID = req.cookies["user_id"];
   if (!userID) {
-    return res.status(401).send("You must be logged in to see this");
+    return res.status(401).send("You must be logged in to see this.");
   } else {
     const templateVars = { user: users[req.cookies["user_id"]], urls: urlsForUser(userID, urlDatabase) };
     res.render("urls_index", templateVars);
@@ -135,9 +135,15 @@ app.get("/urls/:id", (req, res) => {
   const userID = req.cookies["user_id"];
   if(!userID) {
     return res.status(401).send("You must be logged in to see this.");
-  } else {
-    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.cookies["user_id"]] };
-    res.render("urls_show", templateVars);
+  }
+  const userURLS = urlsForUser(userID, urlDatabase); 
+  for (let key in userURLS) {
+    if(req.params.id === key) {
+      const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.cookies["user_id"]] };
+      res.render("urls_show", templateVars);
+    } else {
+      return res.status(401).send("You cannot access urls you have not created.");
+    }
   }
   
 });
@@ -145,7 +151,7 @@ app.get("/urls/:id", (req, res) => {
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id].longURL;
   if(!longURL) {
-    return res.status(404).send("We do not have a link that corresponds to that short URL at this time");
+    return res.status(404).send("We do not have a link that corresponds to that short URL at this time.");
   } else {
     res.redirect(longURL);
   }
@@ -160,7 +166,7 @@ app.post("/urls", (req, res) => {
   // only registered users can add urls
   const userID = req.cookies["user_id"];
   if(!userID) {
-    return res.status(401).send("You must be logged in to create tiny URLs\n");
+    return res.status(401).send("You must be logged in to create tiny URLs.\n");
   } else {
     const newShortURL = generateRandomString();
     urlDatabase[newShortURL] = { 
@@ -177,16 +183,16 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   if (email === '' || password === '') {
-    return res.status(403).send('Please input a valid email and password');
+    return res.status(403).send("Please input a valid email and password.");
   }
   const user = getUserByEmail(users, email);
   const userID = user.id;
   if (!user) {
-    return res.status(403).send('Please input a valid email and password');
+    return res.status(403).send("Please input a valid email and password.");
   }
 
   if (password !== user.password) {
-    res.status(403).send('Password incorrect');
+    res.status(403).send("Incorrect password.");
   }
   res.cookie("user_id", userID);
   res.redirect("/urls");
@@ -203,11 +209,11 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   
   if (email === '' || password === '') {
-    return res.status(400).send("Please input a valid email and password");
+    return res.status(400).send("Please input a valid email and password.");
   }
 
   if(getUserByEmail(users, email)) {
-    return res.status(400).send("There is already a user with that email");
+    return res.status(400).send("There is already a user with that email.");
   }
   const userID = generateRandomString();
   users[userID] = { userID, email, password };
