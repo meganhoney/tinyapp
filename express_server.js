@@ -35,6 +35,17 @@ const getUserByEmail = function(database, email) {
   
 };
 
+const urlsForUser = function(id, database) {
+  let urls = {};
+
+  for (let key in database) {
+    if(database[key].userID === id) {
+      urls[key] = database[key].longURL;
+    }
+  }
+  return urls;
+};
+
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -45,7 +56,7 @@ const urlDatabase = {
     userID: "b2xVn2",
   },
 };
-
+urlsForUser("aj481W", urlDatabase);
 const users = {
   aJ48lW: {
     id: "aJ48lW",
