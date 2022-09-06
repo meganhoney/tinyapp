@@ -183,16 +183,16 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   if (email === '' || password === '') {
-    return res.status(403).send("Please input a valid email and password.");
+    return res.status(400).send("Please input a valid email and password.");
   }
   const user = getUserByEmail(users, email);
   const userID = user.id;
   if (!user) {
-    return res.status(403).send("Please input a valid email and password.");
+    return res.status(400).send("Please input a valid email and password.");
   }
 
   if (password !== user.password) {
-    res.status(403).send("Incorrect password.");
+    res.status(400).send("Incorrect password.");
   }
   res.cookie("user_id", userID);
   res.redirect("/urls");
@@ -222,8 +222,17 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
-app.post("/urls/:id/edit", (req, res) => {
-  urlDatabase[req.params.id] = req.body.newURL;
+app.post("/urls/:id", (req, res) => {
+  const userID = req.cookies["user_id"];
+  const shortURL = req.params.id;
+
+  if(!Object.keys(urlDatabase).includes(shortURL)) {
+    return res.status(404).send("We do not have this url in our database.\n")
+  }
+  if (userID !== urlDatabase[shortURL].userID) {
+    return res.status(401).send("You are not able to edit links you did not create.\n");
+  }
+  urlDatabase[shortURL].longURL = req.body.newURL;
   res.redirect("/urls");
 });
 
