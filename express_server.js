@@ -122,7 +122,7 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   if(!longURL) {
     res.status(404).send("We do not have a link that corresponds to that short URL at this time");
   } else {
@@ -142,7 +142,11 @@ app.post("/urls", (req, res) => {
     res.status(401).send("You must be logged in to create tiny URLs\n");
   } else {
     const newShortURL = generateRandomString();
-    urlDatabase[newShortURL] = req.body.longURL;
+    urlDatabase[newShortURL] = { 
+      longURL: req.body.longURL,
+      userID: userID
+    };
+    console.log(urlDatabase);
     res.redirect("/urls/" + newShortURL);
   }
   
@@ -191,12 +195,6 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
-// app.post("/urls/:id", (req, res) => {
-//   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.cookies["user_id"]] };
-//   //res.render("urls_show", templateVars);
-//   res.redirect("/urls/:id");
-// });
-
 app.post("/urls/:id/edit", (req, res) => {
   urlDatabase[req.params.id] = req.body.newURL;
   res.redirect("/urls");
@@ -210,10 +208,6 @@ app.post("/urls/:id/delete", (req, res) => {
 // What would happen if a client requests a short URL with a non-existant id?
 // What happens to the urlDatabase when the server is restarted?
 // What type of status code do our redirects have? What does this status code mean?
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
