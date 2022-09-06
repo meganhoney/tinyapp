@@ -240,6 +240,19 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
+  const userID = req.cookies["user_id"];
+  const shortURL = req.params.id;
+
+  if(!Object.keys(urlDatabase).includes(shortURL)) {
+    return res.status(404).send("We do not have this url in our database.\n")
+  }
+  if(!userID) {
+    return res.status(401).send("You must be logged in to delete links.\n")
+  }
+  if (userID !== urlDatabase[shortURL].userID) {
+    return res.status(401).send("You are not able to delete links you did not create.\n");
+  }
+
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
 });
