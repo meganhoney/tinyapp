@@ -86,18 +86,18 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   if (!userID) {
     return res.status(401).send("You must be logged in to see this.");
   } else {
-    const templateVars = { user: users[req.cookies["user_id"]], urls: urlsForUser(userID, urlDatabase) };
+    const templateVars = { user: users[userID], urls: urlsForUser(userID, urlDatabase) };
     res.render("urls_index", templateVars);
   }
   
 })
 
 app.get("/register", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   // if user is not registered and logged in registration page will render
   if (!userID) {
     const templateVars = {
@@ -111,7 +111,7 @@ app.get("/register", (req, res) => {
 })
 
 app.get("/login", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   // if user is not logged in login page will render
   if (!userID) {
     const templateVars = {
@@ -125,25 +125,25 @@ app.get("/login", (req, res) => {
 })
 
 app.get("/urls/new", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   if(!userID) {
     res.redirect("/login");
   } else {
-    const templateVars = { user: users[req.cookies["user_id"]] };
+    const templateVars = { user: users[userID] };
     res.render("urls_new", templateVars);
   }
 
 });
 
 app.get("/urls/:id", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   if(!userID) {
     return res.status(401).send("You must be logged in to see this.");
   }
   const userURLS = urlsForUser(userID, urlDatabase); 
   for (let key in userURLS) {
     if(req.params.id === key) {
-      const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.cookies["user_id"]] };
+      const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[userID] };
       res.render("urls_show", templateVars);
     } else {
       return res.status(401).send("You cannot access urls you have not created.");
@@ -168,7 +168,7 @@ app.get("/u/:id", (req, res) => {
 // Create new shortURL - redirect to page with that new url
 app.post("/urls", (req, res) => {
   // only registered users can add urls
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   if(!userID) {
     return res.status(401).send("You must be logged in to create tiny URLs.\n");
   } else {
@@ -199,14 +199,14 @@ app.post("/login", (req, res) => {
     return res.status(400).send("Incorrect password.");
   }
 
-  res.cookie("user_id", user.userID);
+  req.session.user_id = user.userID;
   res.redirect("/urls");
 
 });
 
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect("/urls");
+  res.redirect("/login");
 })
 
 app.post("/register", (req, res) => {
@@ -223,12 +223,12 @@ app.post("/register", (req, res) => {
   const userID = generateRandomString();
   users[userID] = { userID, email, password };
   
-  res.cookie("user_id", userID);
+  req.session.user_id = userID;
   res.redirect("/urls");
 });
 
 app.post("/urls/:id", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   const shortURL = req.params.id;
 
   if(!Object.keys(urlDatabase).includes(shortURL)) {
@@ -245,7 +245,7 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   const shortURL = req.params.id;
 
   if(!Object.keys(urlDatabase).includes(shortURL)) {
@@ -261,10 +261,6 @@ app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
 });
-
-// What would happen if a client requests a short URL with a non-existant id?
-// What happens to the urlDatabase when the server is restarted?
-// What type of status code do our redirects have? What does this status code mean?
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
