@@ -1,10 +1,8 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
-
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession( {
@@ -13,35 +11,39 @@ app.use(cookieSession( {
   maxAge: 24 * 60 * 60 * 1000
 }));
 
-
 // FUNCTIONS AND OBJECTS
 const { generateRandomString, getUserByEmail, urlsForUser } = require("./helpers");
 
-const urlDatabase = {};
+const urlDatabase = {
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "b2xVn2",
+  },
+};
 
-const users = {};
+const users = {
+  aJ48lW: {
+    id: "aJ48lW",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  b2xVn2: {
+    id: "b2xVn2",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
 
 
 // GET REQUESTS
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
-
-app.get("/urls", (req, res) => {
-  const userID = req.session.user_id;
-  if (!userID) {
-    return res.status(401).send("You must be logged in to see this.");
-  } else {
-    const templateVars = { user: users[userID], urls: urlsForUser(userID, urlDatabase) };
-    res.render("urls_index", templateVars);
-  }
-  
-})
 
 app.get("/register", (req, res) => {
   const userID = req.session.user_id;
@@ -71,6 +73,17 @@ app.get("/login", (req, res) => {
   
 })
 
+app.get("/urls", (req, res) => {
+  const userID = req.session.user_id;
+  if (!userID) {
+    return res.status(401).send("You must be logged in to see this.");
+  } else {
+    const templateVars = { user: users[userID], urls: urlsForUser(userID, urlDatabase) };
+    res.render("urls_index", templateVars);
+  }
+  
+})
+
 app.get("/urls/new", (req, res) => {
   const userID = req.session.user_id;
   if(!userID) {
@@ -87,14 +100,14 @@ app.get("/urls/:id", (req, res) => {
   if(!userID) {
     return res.status(401).send("You must be logged in to see this.");
   }
-  const userURLS = urlsForUser(userID, urlDatabase); 
-  for (let key in userURLS) {
-    if(req.params.id === key) {
-      const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[userID] };
+  const userURLs = urlsForUser(userID, urlDatabase);
+  const shortURL = req.params.id;
+  
+  if(Object.keys(userURLs).includes(shortURL)) {
+    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[userID] };
       res.render("urls_show", templateVars);
     } else {
       return res.status(401).send("You cannot access urls you have not created.");
-    }
   }
   
 });
@@ -108,7 +121,6 @@ app.get("/u/:id", (req, res) => {
   }
   
 });
-
 
 // POST REQUESTS
 
