@@ -1,8 +1,8 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const cookieParser = require('cookie-parser');
-
+const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -185,16 +185,17 @@ app.post("/login", (req, res) => {
   if (email === '' || password === '') {
     return res.status(400).send("Please input a valid email and password.");
   }
+
   const user = getUserByEmail(users, email);
-  const userID = user.id;
   if (!user) {
     return res.status(400).send("Please input a valid email and password.");
   }
 
-  if (password !== user.password) {
-    res.status(400).send("Incorrect password.");
+  if (!bcrypt.compareSync(password, user.password)) {
+    return res.status(400).send("Incorrect password.");
   }
-  res.cookie("user_id", userID);
+
+  res.cookie("user_id", user.userID);
   res.redirect("/urls");
 
 });
@@ -206,7 +207,7 @@ app.post("/logout", (req, res) => {
 
 app.post("/register", (req, res) => {
   const email = req.body.email;
-  const password = req.body.password;
+  const password = bcrypt.hashSync(req.body.password, 10);
   
   if (email === '' || password === '') {
     return res.status(400).send("Please input a valid email and password.");
