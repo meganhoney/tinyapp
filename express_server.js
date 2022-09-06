@@ -56,7 +56,7 @@ const urlDatabase = {
     userID: "b2xVn2",
   },
 };
-urlsForUser("aj481W", urlDatabase);
+
 const users = {
   aJ48lW: {
     id: "aJ48lW",
@@ -83,13 +83,12 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const userID = req.cookies["user_id"];
-  const templateVars = { user: users[req.cookies["user_id"]], urls: urlDatabase };
   if (!userID) {
-    res.status(401).send("You must be logged in to see this");
+    return res.status(401).send("You must be logged in to see this");
   } else {
+    const templateVars = { user: users[req.cookies["user_id"]], urls: urlsForUser(userID, urlDatabase) };
     res.render("urls_index", templateVars);
   }
-  //console.log(templateVars);
   
 })
 
@@ -133,15 +132,20 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.cookies["user_id"]] };
-  //console.log(templateVars);
-  res.render("urls_show", templateVars);
+  const userID = req.cookies["user_id"];
+  if(!userID) {
+    return res.status(401).send("You must be logged in to see this.");
+  } else {
+    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[req.cookies["user_id"]] };
+    res.render("urls_show", templateVars);
+  }
+  
 });
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id].longURL;
   if(!longURL) {
-    res.status(404).send("We do not have a link that corresponds to that short URL at this time");
+    return res.status(404).send("We do not have a link that corresponds to that short URL at this time");
   } else {
     res.redirect(longURL);
   }
@@ -156,7 +160,7 @@ app.post("/urls", (req, res) => {
   // only registered users can add urls
   const userID = req.cookies["user_id"];
   if(!userID) {
-    res.status(401).send("You must be logged in to create tiny URLs\n");
+    return res.status(401).send("You must be logged in to create tiny URLs\n");
   } else {
     const newShortURL = generateRandomString();
     urlDatabase[newShortURL] = { 
@@ -173,12 +177,12 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   if (email === '' || password === '') {
-    res.status(403).send('Please input a valid email and password');
+    return res.status(403).send('Please input a valid email and password');
   }
   const user = getUserByEmail(users, email);
   const userID = user.id;
   if (!user) {
-    res.status(403).send('Please input a valid email and password');
+    return res.status(403).send('Please input a valid email and password');
   }
 
   if (password !== user.password) {
