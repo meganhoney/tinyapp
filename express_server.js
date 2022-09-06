@@ -229,6 +229,9 @@ app.post("/urls/:id", (req, res) => {
   if(!Object.keys(urlDatabase).includes(shortURL)) {
     return res.status(404).send("We do not have this url in our database.\n")
   }
+  if(!userID) {
+    return res.status(401).send("You must be logged in to edit links.\n")
+  }
   if (userID !== urlDatabase[shortURL].userID) {
     return res.status(401).send("You are not able to edit links you did not create.\n");
   }
